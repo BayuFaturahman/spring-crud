@@ -4,14 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import com.example.service.CricketerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,10 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.example.model.Cricketer;
 import com.example.repository.CricketerRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
@@ -43,7 +36,7 @@ public class CricketController {
 
 		if (cricketer == null) {
 			// Jika data tidak ditemukan, kirim respons 404 NOT FOUND
-			ApiResponse response = new ApiResponse(HttpStatus.NOT_FOUND.value(), "Cricketer not found.","");
+			ApiResponse response = new ApiResponse(HttpStatus.NOT_FOUND.value(), "Cricketer not found.",null);
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		} else {
 			// Jika data ditemukan, kirim respons dengan data cricketer
@@ -125,8 +118,20 @@ public class CricketController {
 	@CacheEvict(value = "cricketers", allEntries=true)
 	@DeleteMapping("/api/cricketer/{id}")
 	public ResponseEntity<String> deleteCricketer(@PathVariable("id") Long id) {
+		System.out.println(" -------- : masuk");
+
 		Cricketer cCricketer = cricketerService.findById(id);
+
+		// Check if the cricketer with the given id exists
+		if (cCricketer == null) {
+			return new ResponseEntity<String>("Cricketer with id " + id + " not found", HttpStatus.NOT_FOUND);
+		}
+
+		System.out.println(" -------- : " + cCricketer.toString());
+
 		cricketerRepository.delete(cCricketer);
-		return new ResponseEntity<String>("cricketer removed", HttpStatus.OK);
+
+		return new ResponseEntity<String>("Cricketer removed", HttpStatus.OK);
+
 	}
 }
